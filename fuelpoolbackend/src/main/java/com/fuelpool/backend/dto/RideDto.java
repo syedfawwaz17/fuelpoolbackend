@@ -1,6 +1,12 @@
 package com.fuelpool.backend.dto;
 
-import lombok.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.Instant;
 import java.util.List;
 
@@ -10,20 +16,33 @@ import java.util.List;
 @AllArgsConstructor
 public class RideDto {
     private String id;
-    private String driverId;                   // User ID
-    private String carId;                      // Car ID
 
+    @NotNull(message = "Driver ID is required")
+    private String driverId;
+
+    @NotNull(message = "Car ID is required")
+    private String carId;
+
+    @NotNull(message = "Pickup location must be specified")
     private LocationDto pickupLocation;
+
+    @NotNull(message = "Destination location must be specified")
     private LocationDto destination;
 
+    @NotNull(message = "Departure time is required")
     private Instant departureTime;
-    private Boolean ladiesOnly;
-    private String fuelType;
-    private Integer availableSeats;
-    private Double farePerSeat;
-    private String status;                     // open, booked,...
 
-    private List<String> riderIds;             // List of User IDs who booked
+    private Boolean ladiesOnly;
+
+    private String fuelType;
+
+    private Integer availableSeats;
+
+    private Double farePerSeat;
+
+    private String status; // "open", "booked", etc.
+
+    private List<String> riderIds;
 
     private Instant createdAt;
     private Instant updatedAt;
@@ -34,6 +53,8 @@ public class RideDto {
     @AllArgsConstructor
     public static class LocationDto {
         private String address;
-        private double[] coordinates; // [longitude, latitude]
+
+        @Size(min = 2, max = 2, message = "Coordinates must have exactly 2 elements [longitude, latitude]")
+        private double[] coordinates;
     }
 }

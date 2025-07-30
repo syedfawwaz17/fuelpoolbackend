@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,7 +39,9 @@ public class RideService {
     }
 
     public List<RideDto> getAllOpen() {
-        return rideRepo.findByStatus("open").stream().map(rideMapper::toDto).collect(Collectors.toList());
+        List<Ride> rides = rideRepo.findByStatus("open");
+        if (rides == null) rides = new ArrayList<>();
+        return rides.stream().map(rideMapper::toDto).collect(Collectors.toList());
     }
 
     public RideDto updateStatus(String id, String status) {
