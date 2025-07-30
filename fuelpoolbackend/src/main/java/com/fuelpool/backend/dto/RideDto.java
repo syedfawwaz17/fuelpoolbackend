@@ -15,6 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RideDto {
+
     private String id;
 
     @NotNull(message = "Driver ID is required")
@@ -42,7 +43,7 @@ public class RideDto {
 
     private String status; // "open", "booked", etc.
 
-    private List<String> riderIds;
+    private List<String> riders;
 
     private Instant createdAt;
     private Instant updatedAt;

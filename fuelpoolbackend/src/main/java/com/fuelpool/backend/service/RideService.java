@@ -9,6 +9,7 @@ import com.fuelpool.backend.repository.CarRepository;
 import com.fuelpool.backend.repository.RideRepository;
 import com.fuelpool.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -16,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RideService {
@@ -26,29 +28,62 @@ public class RideService {
 
     public RideDto create(RideDto dto) {
         Ride ride = rideMapper.toEntity(dto);
-        ride.setDriver(userRepo.findById(dto.getDriverId()).orElseThrow());
-        ride.setCar(carRepo.findById(dto.getCarId()).orElseThrow());
+
+        // Set driver
+        User driver = userRepo.findById(dto.getDriverId())
+                .orElseThrow(() -> new RuntimeException("Driver not found with ID: " + dto.getDriverId()));
+        ride.setDriver(driver);  // Changed from setDriverId to setDriver
+
+        // Set car
+        Car car = carRepo.findById(dto.getCarId())
+                .orElseThrow(() -> new RuntimeException("Car not found with ID: " + dto.getCarId()));
+        ride.setCar(car);
+
+        // Set riders
+        if (dto.getRiders() != null && !dto.getRiders().isEmpty()) {
+            List<User> riders = userRepo.findAllById(dto.getRiders());
+            ride.setRiders(riders);
+        } else {
+            ride.setRiders(new ArrayList<>());
+        }
+
+        // Set default values
         ride.setStatus("open");
         ride.setCreatedAt(Instant.now());
         ride.setUpdatedAt(Instant.now());
-        return rideMapper.toDto(rideRepo.save(ride));
+
+        Ride saved = rideRepo.save(ride);
+        return rideMapper.toDto(saved);
     }
 
     public RideDto getById(String id) {
-        return rideMapper.toDto(rideRepo.findById(id).orElseThrow(() -> new RuntimeException("Ride not found")));
+        Ride ride = rideRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Ride not found with ID: " + id));
+        return rideMapper.toDto(ride);
     }
 
     public List<RideDto> getAllOpen() {
         List<Ride> rides = rideRepo.findByStatus("open");
-        if (rides == null) rides = new ArrayList<>();
-        return rides.stream().map(rideMapper::toDto).collect(Collectors.toList());
+        if (rides == null) {
+            rides = new ArrayList<>();
+        }
+        try {
+            return rides.stream()
+                    .map(rideMapper::toDto)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("Error mapping open rides", e);
+            throw e;
+        }
     }
 
     public RideDto updateStatus(String id, String status) {
-        Ride ride = rideRepo.findById(id).orElseThrow();
+        Ride ride = rideRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Ride not found with ID: " + id));
         ride.setStatus(status);
         ride.setUpdatedAt(Instant.now());
-        return rideMapper.toDto(rideRepo.save(ride));
+        Ride updated = rideRepo.save(ride);
+        return rideMapper.toDto(updated);
     }
 
     public void delete(String id) {

@@ -20,7 +20,7 @@ public class Ride {
     private String id;
 
     @DBRef
-    private User driver;
+    private User driver;  // Changed from 'driverId' to 'driver'
 
     @DBRef
     private Car car;
@@ -36,7 +36,7 @@ public class Ride {
     private String status; // "open", "booked", "in_progress", "completed", "cancelled"
 
     @DBRef
-    private List<User> riderIds;
+    private List<User> riders;
 
     private Instant createdAt;
     private Instant updatedAt;
